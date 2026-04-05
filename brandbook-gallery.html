@@ -1,0 +1,806 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Perimentex Brandbook Gallery</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&family=Fira+Code:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Outfit:wght@400;500;600;700&family=Instrument+Sans:wght@400;500;600;700&family=Source+Code+Pro:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #F5F3EF; color: #1A1A1E; font-family: 'Inter', sans-serif; line-height: 1.6; transition: background 0.3s; }
+
+  /* --- GALLERY VIEW --- */
+  #gallery { padding: 60px 24px; max-width: 1200px; margin: 0 auto; }
+  #gallery h1 { font-size: 36px; font-weight: 800; text-align: center; letter-spacing: -1.5px; margin-bottom: 8px; color: #1A1A1E; }
+  #gallery .subtitle { text-align: center; color: #6B7280; font-size: 15px; margin-bottom: 48px; }
+  .gallery-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+  @media (max-width: 900px) { .gallery-grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 600px) {
+    .gallery-grid { grid-template-columns: 1fr; }
+    #gallery { padding: 32px 16px; }
+    #gallery h1 { font-size: 28px; }
+    .detail-header { padding: 10px 16px; flex-wrap: wrap; gap: 8px; }
+    .detail-name { font-size: 13px; order: 3; width: 100%; }
+    .nav-btn { padding: 6px 10px; font-size: 11px; }
+    .detail-body { padding: 24px 16px 60px; }
+    .d-hero h1 { font-size: 28px !important; }
+    .d-color-grid { grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 10px; }
+    .d-card-grid { grid-template-columns: 1fr; }
+    .d-component-row { gap: 8px; }
+    .d-btn { padding: 8px 14px; font-size: 13px; }
+    .d-token-table { font-size: 11px; }
+    .d-token-table td, .d-token-table th { padding: 6px 8px; }
+  }
+
+  .gallery-card {
+    border-radius: 14px; overflow: hidden; cursor: pointer;
+    border: 1px solid #E0DDD8; transition: all 0.25s; position: relative; background: #FFFFFF;
+  }
+  .gallery-card:hover { transform: translateY(-4px); box-shadow: 0 12px 40px rgba(0,0,0,0.1); }
+  .gallery-card .preview { height: 160px; display: flex; position: relative; }
+  .gallery-card .preview .half { flex: 1; display: flex; align-items: center; justify-content: center; }
+  .gallery-card .preview .swatch { width: 32px; height: 32px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.2); }
+  .gallery-card .info { padding: 16px; background: #FFFFFF; }
+  .gallery-card .info h3 { font-size: 16px; font-weight: 700; margin-bottom: 2px; color: #1A1A1E; }
+  .gallery-card .info .desc { font-size: 13px; color: #6B7280; }
+  .gallery-card .info .tags { margin-top: 8px; display: flex; gap: 6px; flex-wrap: wrap; }
+  .gallery-card .info .tag { font-size: 11px; padding: 2px 8px; border-radius: 4px; background: #F0EDE8; color: #6B7280; font-family: 'JetBrains Mono', monospace; }
+  .gallery-card .badge-trend { position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.65); color: #FBBF24; font-size: 10px; font-weight: 600; padding: 3px 8px; border-radius: 4px; font-family: 'JetBrains Mono', monospace; backdrop-filter: blur(4px); letter-spacing: 0.5px; }
+
+  /* --- DETAIL VIEW --- */
+  #detail { display: none; padding: 0; }
+  .detail-header { position: sticky; top: 0; z-index: 100; backdrop-filter: blur(12px); padding: 14px 24px; display: flex; align-items: center; gap: 12px; transition: all 0.3s; background: rgba(245,243,239,0.9); border-bottom: 1px solid #E0DDD8; overflow: visible; }
+  .back-btn { padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: 'Inter', sans-serif; transition: all 0.15s; background: #FFFFFF; border: 1px solid #E0DDD8; color: #6B7280; flex-shrink: 0; }
+  .back-btn:hover { background: #F0EDE8; color: #1A1A1E; }
+  /* nav buttons are now direct children of detail-header */
+  .nav-btn { padding: 8px 12px; border-radius: 8px; font-size: 12px; cursor: pointer; font-family: 'JetBrains Mono', monospace; transition: all 0.15s; background: #FFFFFF; border: 1px solid #E0DDD8; color: #6B7280; white-space: nowrap; }
+  .nav-btn:hover { color: #1A1A1E; border-color: #9CA3AF; }
+  .detail-name { font-weight: 700; font-size: 16px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+  .detail-body { max-width: 1100px; margin: 0 auto; padding: 40px 24px 80px; }
+
+  /* Shared detail styles */
+  .d-hero { text-align: center; padding: 60px 0 48px; margin-bottom: 56px; }
+  .d-hero h1 { font-size: 44px; font-weight: 800; letter-spacing: -2px; }
+  .d-hero .d-tag { display: inline-block; margin-top: 10px; padding: 4px 14px; border-radius: 6px; font-family: 'JetBrains Mono', monospace; font-size: 12px; letter-spacing: 1px; }
+  .d-hero p { margin-top: 16px; color: #71717A; max-width: 580px; margin-left: auto; margin-right: auto; font-size: 15px; }
+  .d-section { margin-bottom: 56px; }
+  .d-section-title { font-family: 'JetBrains Mono', monospace; font-size: 12px; text-transform: uppercase; letter-spacing: 3px; margin-bottom: 6px; }
+  .d-section h2 { font-size: 26px; font-weight: 700; margin-bottom: 4px; letter-spacing: -0.5px; }
+  .d-section .d-desc { font-size: 14px; margin-bottom: 24px; }
+
+  .d-color-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 14px; }
+  .d-color-card { border-radius: 10px; overflow: hidden; cursor: pointer; transition: all 0.2s; }
+  .d-color-card:hover { transform: translateY(-2px); }
+  .d-swatch { height: 80px; }
+  .d-color-info { padding: 8px 10px; }
+  .d-color-name { font-size: 12px; font-weight: 600; }
+  .d-color-hex { font-family: 'JetBrains Mono', monospace; font-size: 11px; }
+
+  .d-type-sample { border-radius: 10px; padding: 20px; margin-bottom: 12px; }
+  .d-type-label { font-family: 'JetBrains Mono', monospace; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
+
+  .d-component-row { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; align-items: center; }
+  .d-btn { padding: 9px 20px; border-radius: 8px; border: none; font-size: 14px; font-weight: 600; cursor: pointer; }
+  .d-badge { display: inline-block; padding: 3px 10px; border-radius: 6px; font-size: 12px; font-weight: 600; }
+
+  .d-card { border-radius: 12px; padding: 20px; }
+  .d-card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; }
+  .d-card h3 { font-size: 13px; font-weight: 500; }
+  .d-card .d-metric { font-size: 30px; font-weight: 700; margin: 6px 0 14px; letter-spacing: -1.5px; }
+  .d-stat-row { display: flex; justify-content: space-between; padding: 7px 0; font-size: 13px; }
+
+  .d-token-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .d-token-table th { text-align: left; padding: 8px 10px; font-family: 'JetBrains Mono', monospace; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; }
+  .d-token-table td { padding: 8px 10px; }
+  .d-token-table td:first-child { font-family: 'JetBrains Mono', monospace; font-size: 12px; }
+
+  .copied { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: #fff; color: #000; padding: 8px 16px; border-radius: 6px; font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 600; opacity: 0; transition: opacity 0.2s; z-index: 9999; pointer-events: none; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+  .copied.show { opacity: 1; }
+</style>
+</head>
+<body>
+<div id="copied" class="copied">Copied!</div>
+
+<!-- ==================== GALLERY ==================== -->
+<div id="gallery">
+  <h1>Perimentex Brandbook</h1>
+  <p class="subtitle">12 style directions for the platform. Click any card to explore the full design system.</p>
+  <div class="gallery-grid" id="galleryGrid"></div>
+</div>
+
+<!-- ==================== DETAIL ==================== -->
+<div id="detail">
+  <div class="detail-header">
+    <button class="back-btn" onclick="showGallery()">← Back</button>
+    <button class="nav-btn" onclick="navigateOption(-1)">← Prev</button>
+    <span class="detail-name" id="detailName"></span>
+    <button class="nav-btn" style="margin-left:auto" onclick="navigateOption(1)">Next →</button>
+  </div>
+  <div class="detail-body" id="detailBody"></div>
+</div>
+
+<script>
+// ========== DATA ==========
+const options = [
+  {
+    id: 'terminal-dark',
+    name: 'Terminal Dark',
+    desc: 'Neon green/cyan on black. Bloomberg-style trading terminal.',
+    tags: ['dark', 'monospace', 'data-dense'],
+    trending: false,
+    bg: '#0A0E14', accent: '#00E5A0', accent2: '#00D4FF',
+    colors: [
+      { name: 'Primary / Success', hex: '#00E5A0' },
+      { name: 'Secondary / Info', hex: '#00D4FF' },
+      { name: 'Danger / Sell', hex: '#FF6B6B' },
+      { name: 'Warning', hex: '#FFB347' },
+      { name: 'BG Level 0', hex: '#0A0E14' },
+      { name: 'BG Level 1', hex: '#111720' },
+      { name: 'BG Level 2', hex: '#1A2130' },
+      { name: 'Border', hex: '#2A3545' },
+      { name: 'Text Primary', hex: '#E6EDF3' },
+      { name: 'Text Secondary', hex: '#8B949E' },
+    ],
+    fonts: { sans: 'Inter', mono: 'JetBrains Mono' },
+    tokens: [
+      ['--primary', '#00E5A0', 'Buy, positive values, CTAs'],
+      ['--secondary', '#00D4FF', 'Info states, links'],
+      ['--danger', '#FF6B6B', 'Sell, negative values, errors'],
+      ['--bg-0', '#0A0E14', 'Page background'],
+      ['--bg-1', '#111720', 'Card/panel background'],
+      ['--font-mono', 'JetBrains Mono', 'Data, metrics, labels'],
+      ['--font-sans', 'Inter', 'Body text, UI copy'],
+    ],
+    metrics: [
+      { title: '24h Volume', value: '$4.2B', color: '#00E5A0', rows: [['BTC/USDT','$1.8B'],['ETH/USDT','$890M'],['SOL/USDT','$340M']] },
+      { title: 'Open P&L', value: '-$12,430', color: '#FF6B6B', rows: [['Unrealized','-0.82%'],['Positions','7'],['Margin Used','34.2%']] },
+    ]
+  },
+  {
+    id: 'arctic-clean',
+    name: 'Arctic Clean',
+    desc: 'Light, professional SaaS. Blue primary, trustworthy.',
+    tags: ['light', 'professional', 'clean'],
+    trending: false,
+    bg: '#FFFFFF', accent: '#2563EB', accent2: '#0EA5E9',
+    colors: [
+      { name: 'Primary', hex: '#2563EB' },
+      { name: 'Secondary', hex: '#0EA5E9' },
+      { name: 'Accent', hex: '#8B5CF6' },
+      { name: 'Success / Buy', hex: '#10B981' },
+      { name: 'Danger / Sell', hex: '#EF4444' },
+      { name: 'Warning', hex: '#F59E0B' },
+      { name: 'Background', hex: '#FFFFFF' },
+      { name: 'Surface', hex: '#F8FAFC' },
+      { name: 'Text Primary', hex: '#0F172A' },
+      { name: 'Text Secondary', hex: '#475569' },
+    ],
+    fonts: { sans: 'DM Sans', mono: 'IBM Plex Mono' },
+    tokens: [
+      ['--primary', '#2563EB', 'Primary actions, active states'],
+      ['--accent', '#8B5CF6', 'AI features, premium indicators'],
+      ['--success', '#10B981', 'Buy, positive values'],
+      ['--danger', '#EF4444', 'Sell, negative values, errors'],
+      ['--bg-0', '#FFFFFF', 'Page background'],
+      ['--font-sans', 'DM Sans', 'UI text, headings, body'],
+      ['--font-mono', 'IBM Plex Mono', 'Data, prices'],
+    ],
+    metrics: [
+      { title: 'Portfolio Value', value: '$2,847,310', color: '#10B981', rows: [['24h Change','+3.24%'],['7d Change','-1.08%'],['Positions','12']] },
+      { title: 'Risk Score', value: 'Medium', color: '#F59E0B', rows: [['Leverage','2.4x'],['Max Drawdown','-8.2%'],['Sharpe','1.87']] },
+    ]
+  },
+  {
+    id: 'neon-pulse',
+    name: 'Neon Pulse',
+    desc: 'Purple/pink gradients, glassmorphism, futuristic.',
+    tags: ['dark', 'gradients', 'bold'],
+    trending: false,
+    bg: '#0C0A1A', accent: '#A855F7', accent2: '#EC4899',
+    colors: [
+      { name: 'Primary', hex: '#A855F7' },
+      { name: 'Secondary', hex: '#EC4899' },
+      { name: 'Accent / Cyan', hex: '#06B6D4' },
+      { name: 'Success / Buy', hex: '#34D399' },
+      { name: 'Danger / Sell', hex: '#F43F5E' },
+      { name: 'Warning', hex: '#FBBF24' },
+      { name: 'BG Deep', hex: '#0C0A1A' },
+      { name: 'BG Surface', hex: '#13112A' },
+      { name: 'Text Primary', hex: '#F0EEFF' },
+      { name: 'Text Secondary', hex: '#9794B8' },
+    ],
+    fonts: { sans: 'Space Grotesk', mono: 'Fira Code' },
+    tokens: [
+      ['--primary', '#A855F7', 'Brand, highlights, CTAs'],
+      ['--secondary', '#EC4899', 'Hot indicators, secondary brand'],
+      ['--gradient-1', 'Purple → Pink', 'CTAs, hero elements'],
+      ['--gradient-2', 'Cyan → Purple', 'Charts, progress bars'],
+      ['--glass', 'rgba + blur', 'Card backgrounds, panels'],
+      ['--font-sans', 'Space Grotesk', 'UI text, headings'],
+      ['--font-mono', 'Fira Code', 'Data, prices'],
+    ],
+    metrics: [
+      { title: 'AI Signal', value: '92 / 100', color: '#A855F7', rows: [['Confidence','HIGH'],['Direction','LONG'],['Timeframe','4H']] },
+      { title: 'Strategy Perf', value: '+127.4%', color: '#34D399', rows: [['Win Rate','68.3%'],['Trades (30d)','142'],['Avg Hold','2.4h']] },
+    ]
+  },
+  {
+    id: 'sand-minimal',
+    name: 'Sand Minimal',
+    desc: 'Warm neutrals, amber accent, utility-first.',
+    tags: ['light', 'warm', 'minimal'],
+    trending: false,
+    bg: '#FAFAF9', accent: '#D97706', accent2: '#1C1917',
+    colors: [
+      { name: 'Primary', hex: '#1C1917' },
+      { name: 'Accent', hex: '#D97706' },
+      { name: 'Buy / Up', hex: '#059669' },
+      { name: 'Sell / Down', hex: '#DC2626' },
+      { name: 'Warning', hex: '#CA8A04' },
+      { name: 'Background', hex: '#FAFAF9' },
+      { name: 'Surface', hex: '#F5F5F4' },
+      { name: 'Muted', hex: '#E7E5E4' },
+      { name: 'Text Body', hex: '#57534E' },
+      { name: 'Text Muted', hex: '#A8A29E' },
+    ],
+    fonts: { sans: 'Instrument Sans', mono: 'Source Code Pro' },
+    tokens: [
+      ['--primary', '#1C1917', 'Headings, primary buttons'],
+      ['--accent', '#D97706', 'CTAs, highlights, active'],
+      ['--success', '#059669', 'Buy, positive values'],
+      ['--danger', '#DC2626', 'Sell, negative values'],
+      ['--bg-0', '#FAFAF9', 'Page background'],
+      ['--font-sans', 'Instrument Sans', 'UI, headings, body'],
+      ['--font-mono', 'Source Code Pro', 'Data, prices'],
+    ],
+    metrics: [
+      { title: 'Net Value', value: '$2.84M', color: '#059669', rows: [['24h','+1.2%'],['7d','-0.4%'],['30d','+8.7%']] },
+      { title: 'Active Orders', value: '23', color: '#1C1917', rows: [['Limit','18'],['Stop','4'],['OCO','1']] },
+    ]
+  },
+  {
+    id: 'gold-standard',
+    name: 'Gold Standard',
+    desc: 'Dark zinc + gold accents. Institutional, premium.',
+    tags: ['dark', 'premium', 'institutional'],
+    trending: false,
+    bg: '#09090B', accent: '#F59E0B', accent2: '#FBBF24',
+    colors: [
+      { name: 'Gold / Primary', hex: '#F59E0B' },
+      { name: 'Gold Light', hex: '#FBBF24' },
+      { name: 'Gold Dim', hex: '#D97706' },
+      { name: 'Success / Buy', hex: '#22C55E' },
+      { name: 'Danger / Sell', hex: '#EF4444' },
+      { name: 'Info', hex: '#38BDF8' },
+      { name: 'BG Base', hex: '#09090B' },
+      { name: 'BG Elevated', hex: '#18181B' },
+      { name: 'Text Primary', hex: '#FAFAFA' },
+      { name: 'Text Secondary', hex: '#A1A1AA' },
+    ],
+    fonts: { sans: 'Plus Jakarta Sans', mono: 'JetBrains Mono' },
+    tokens: [
+      ['--gold', '#F59E0B', 'Primary brand, premium CTAs'],
+      ['--gold-dim', '#D97706', 'Borders, secondary gold'],
+      ['--success', '#22C55E', 'Buy, positive P&L'],
+      ['--danger', '#EF4444', 'Sell, negative P&L, errors'],
+      ['--bg-0', '#09090B', 'Page background (zinc-950)'],
+      ['--font-sans', 'Plus Jakarta Sans', 'UI, headings'],
+      ['--font-mono', 'JetBrains Mono', 'Prices, data'],
+    ],
+    metrics: [
+      { title: 'Total AUM', value: '$48.2M', color: '#F59E0B', rows: [['Active Strategies','8'],['YTD Return','+34.7%'],['Max DD','-6.2%']] },
+      { title: 'Risk Exposure', value: '$12.4M', color: '#FAFAFA', rows: [['Leverage','3.1x'],['Margin Ratio','26.8%'],['Liq. Distance','18.4%']] },
+    ]
+  },
+  {
+    id: 'carbon-mint',
+    name: 'Carbon Mint',
+    desc: 'Glowing mint on deep anthracite. Precision dashboards.',
+    tags: ['dark', 'mint', 'technical'],
+    trending: true,
+    bg: '#1A1D21', accent: '#00FFC2', accent2: '#00B8D4',
+    colors: [
+      { name: 'Mint / Primary', hex: '#00FFC2' },
+      { name: 'Mint Dim', hex: '#00D9A4' },
+      { name: 'Cyan / Secondary', hex: '#00B8D4' },
+      { name: 'Info / Blue', hex: '#448AFF' },
+      { name: 'Danger / Sell', hex: '#FF5252' },
+      { name: 'Warning', hex: '#FFD740' },
+      { name: 'BG Base', hex: '#1A1D21' },
+      { name: 'Carbon Surface', hex: '#2D3436' },
+      { name: 'Text Primary', hex: '#F0F2F4' },
+      { name: 'Text Secondary', hex: '#9CA3AF' },
+    ],
+    fonts: { sans: 'Outfit', mono: 'Fira Code' },
+    tokens: [
+      ['--mint', '#00FFC2', 'Primary actions, success, buy'],
+      ['--secondary', '#00B8D4', 'Links, secondary info'],
+      ['--danger', '#FF5252', 'Sell, errors, kill switch'],
+      ['--warning', '#FFD740', 'Degraded states, caution'],
+      ['--bg-0', '#1A1D21', 'Page background'],
+      ['--font-sans', 'Outfit', 'UI, headings, body'],
+      ['--font-mono', 'Fira Code', 'Metrics, timestamps'],
+    ],
+    metrics: [
+      { title: 'Engine Status', value: 'RUNNING', color: '#00FFC2', rows: [['Strategies','12'],['Orders/sec','847'],['P99 Latency','0.42ms']] },
+      { title: 'Daily P&L', value: '-$8,420', color: '#FF5252', rows: [['Win Rate','61.2%'],['Trades','1,847'],['Max DD','-2.1%']] },
+    ]
+  },
+  {
+    id: 'electric-pulse',
+    name: 'Electric Pulse',
+    desc: 'Violet-blue + electric cyan. Fintech & AI native.',
+    tags: ['dark', 'violet', 'fintech'],
+    trending: true,
+    bg: '#0F0E1A', accent: '#6358FF', accent2: '#00E5E5',
+    colors: [
+      { name: 'Violet / Primary', hex: '#6358FF' },
+      { name: 'Violet Light', hex: '#8B83FF' },
+      { name: 'Cyan / Secondary', hex: '#00E5E5' },
+      { name: 'Success / Buy', hex: '#00E676' },
+      { name: 'Danger / Sell', hex: '#FF5252' },
+      { name: 'Warning', hex: '#FFAB40' },
+      { name: 'BG Deep', hex: '#0F0E1A' },
+      { name: 'BG Surface', hex: '#171628' },
+      { name: 'Text Primary', hex: '#EDEDFF' },
+      { name: 'Text Secondary', hex: '#8E8DA3' },
+    ],
+    fonts: { sans: 'Plus Jakarta Sans', mono: 'JetBrains Mono' },
+    tokens: [
+      ['--violet', '#6358FF', 'Primary brand, CTAs'],
+      ['--cyan', '#00E5E5', 'Secondary, highlights, AI features'],
+      ['--success', '#00E676', 'Buy, positive values'],
+      ['--danger', '#FF5252', 'Sell, negative values'],
+      ['--bg-0', '#0F0E1A', 'Page background'],
+      ['--font-sans', 'Plus Jakarta Sans', 'UI, headings'],
+      ['--font-mono', 'JetBrains Mono', 'Data, prices'],
+    ],
+    metrics: [
+      { title: 'AI Confidence', value: '94.2%', color: '#6358FF', rows: [['Model','GPT-Quant v3'],['Signals/hr','2,340'],['Accuracy','71.8%']] },
+      { title: 'Portfolio', value: '$3.1M', color: '#00E5E5', rows: [['24h P&L','+$47,200'],['Positions','18'],['Sharpe','2.14']] },
+    ]
+  },
+  {
+    id: 'deep-space',
+    name: 'Deep Space',
+    desc: 'Charcoal + lavender purple. Futuristic control center.',
+    tags: ['dark', 'subtle', 'control-room'],
+    trending: true,
+    bg: '#1E2028', accent: '#8C7AE6', accent2: '#A29BFE',
+    colors: [
+      { name: 'Lavender / Primary', hex: '#8C7AE6' },
+      { name: 'Lavender Light', hex: '#A29BFE' },
+      { name: 'Teal / Secondary', hex: '#00CEC9' },
+      { name: 'Success / Buy', hex: '#55EFC4' },
+      { name: 'Danger / Sell', hex: '#FF7675' },
+      { name: 'Warning', hex: '#FFEAA7' },
+      { name: 'BG Charcoal', hex: '#1E2028' },
+      { name: 'BG Surface', hex: '#2D3040' },
+      { name: 'Text Primary', hex: '#DFE6E9' },
+      { name: 'Text Secondary', hex: '#7F8C8D' },
+    ],
+    fonts: { sans: 'DM Sans', mono: 'Fira Code' },
+    tokens: [
+      ['--lavender', '#8C7AE6', 'Primary brand, accent'],
+      ['--teal', '#00CEC9', 'Secondary, info states'],
+      ['--success', '#55EFC4', 'Buy, positive values'],
+      ['--danger', '#FF7675', 'Sell, negative values'],
+      ['--bg-0', '#1E2028', 'Page background'],
+      ['--font-sans', 'DM Sans', 'UI, headings'],
+      ['--font-mono', 'Fira Code', 'Data, prices'],
+    ],
+    metrics: [
+      { title: 'System Health', value: '99.98%', color: '#55EFC4', rows: [['Services','24/24'],['Avg Response','12ms'],['Errors (1h)','3']] },
+      { title: 'Market Overview', value: '$1.2T', color: '#8C7AE6', rows: [['BTC Dom','52.1%'],['Fear/Greed','67'],['24h Vol','$89B']] },
+    ]
+  },
+  {
+    id: 'synth-wave',
+    name: 'Synth Wave',
+    desc: 'Hot pink + void black. Aggressive, HFT-inspired.',
+    tags: ['dark', 'aggressive', 'high-contrast'],
+    trending: true,
+    bg: '#080808', accent: '#FF2079', accent2: '#FF6AC1',
+    colors: [
+      { name: 'Hot Pink / Primary', hex: '#FF2079' },
+      { name: 'Pink Light', hex: '#FF6AC1' },
+      { name: 'Electric Blue', hex: '#00D2FF' },
+      { name: 'Neon Green / Buy', hex: '#39FF14' },
+      { name: 'Red / Sell', hex: '#FF073A' },
+      { name: 'Warning', hex: '#FFE600' },
+      { name: 'Void Black', hex: '#080808' },
+      { name: 'Surface', hex: '#121212' },
+      { name: 'Text Primary', hex: '#FFFFFF' },
+      { name: 'Text Secondary', hex: '#808080' },
+    ],
+    fonts: { sans: 'Space Grotesk', mono: 'JetBrains Mono' },
+    tokens: [
+      ['--pink', '#FF2079', 'Primary brand, emphasis'],
+      ['--blue', '#00D2FF', 'Secondary, info, links'],
+      ['--neon-green', '#39FF14', 'Buy, profit, success'],
+      ['--red', '#FF073A', 'Sell, loss, danger'],
+      ['--bg-0', '#080808', 'Void black background'],
+      ['--font-sans', 'Space Grotesk', 'UI text, headings'],
+      ['--font-mono', 'JetBrains Mono', 'Data, prices'],
+    ],
+    metrics: [
+      { title: 'Execution Speed', value: '0.12ms', color: '#FF2079', rows: [['Throughput','12K ops/s'],['Queue Depth','0'],['Uptime','100%']] },
+      { title: 'Today\'s P&L', value: '+$284K', color: '#39FF14', rows: [['Win Rate','73.1%'],['Trades','8,421'],['Sharpe (ann)','3.42']] },
+    ]
+  },
+  {
+    id: 'coral-horizon',
+    name: 'Coral Horizon',
+    desc: 'Warm teal + sunset gradient. Approachable, high-energy.',
+    tags: ['light', 'warm', 'sunset'],
+    trending: true,
+    bg: '#FFFBF5', accent: '#5A9CB5', accent2: '#FA6868',
+    colors: [
+      { name: 'Teal / Primary', hex: '#5A9CB5' },
+      { name: 'Teal Dark', hex: '#407D95' },
+      { name: 'Gold / Secondary', hex: '#FACE68' },
+      { name: 'Orange / Warm', hex: '#FAAC68' },
+      { name: 'Coral / Accent', hex: '#FA6868' },
+      { name: 'Success / Buy', hex: '#2EAD6D' },
+      { name: 'Danger / Sell', hex: '#E04444' },
+      { name: 'Background', hex: '#FFFBF5' },
+      { name: 'Text Primary', hex: '#1A2A32' },
+      { name: 'Text Secondary', hex: '#5A6B73' },
+    ],
+    fonts: { sans: 'DM Sans', mono: 'IBM Plex Mono' },
+    tokens: [
+      ['--teal', '#5A9CB5', 'Primary actions, headers, links'],
+      ['--gold', '#FACE68', 'Highlights, warnings, accents'],
+      ['--orange', '#FAAC68', 'Secondary accents, warm states'],
+      ['--coral', '#FA6868', 'Alerts, sell, emphasis'],
+      ['--success', '#2EAD6D', 'Buy, positive values'],
+      ['--danger', '#E04444', 'Sell, negative values, errors'],
+      ['--bg-0', '#FFFBF5', 'Warm white background'],
+      ['--font-sans', 'DM Sans', 'UI, headings, body'],
+      ['--font-mono', 'IBM Plex Mono', 'Data, prices'],
+    ],
+    metrics: [
+      { title: 'Portfolio Value', value: '$1.24M', color: '#5A9CB5', rows: [['24h Change','+2.8%'],['Open Positions','9'],['Win Rate','64%']] },
+      { title: 'Daily Volume', value: '$847K', color: '#FAAC68', rows: [['Trades','312'],['Avg Size','$2,714'],['Fees Paid','$423']] },
+    ]
+  },
+  {
+    id: 'emerald-fade',
+    name: 'Emerald Fade',
+    desc: 'Deep-to-light green gradient. Organic, calming, growth.',
+    tags: ['light', 'green', 'monochrome'],
+    trending: true,
+    bg: '#F4F9F0', accent: '#328E6E', accent2: '#67AE6E',
+    colors: [
+      { name: 'Emerald / Primary', hex: '#328E6E' },
+      { name: 'Green Mid', hex: '#67AE6E' },
+      { name: 'Sage / Light', hex: '#90C67C' },
+      { name: 'Cream / Pale', hex: '#E1EEBC' },
+      { name: 'Success / Buy', hex: '#328E6E' },
+      { name: 'Danger / Sell', hex: '#D94040' },
+      { name: 'Warning', hex: '#C49B2A' },
+      { name: 'Background', hex: '#F4F9F0' },
+      { name: 'Text Primary', hex: '#1A2E1A' },
+      { name: 'Text Secondary', hex: '#4A6B4A' },
+    ],
+    fonts: { sans: 'Outfit', mono: 'IBM Plex Mono' },
+    tokens: [
+      ['--emerald', '#328E6E', 'Primary brand, CTAs, buy'],
+      ['--green-mid', '#67AE6E', 'Secondary, highlights'],
+      ['--sage', '#90C67C', 'Backgrounds, subtle accents'],
+      ['--cream', '#E1EEBC', 'Surface tints, badges'],
+      ['--danger', '#D94040', 'Sell, negative values, errors'],
+      ['--bg-0', '#F4F9F0', 'Tinted white background'],
+      ['--font-sans', 'Outfit', 'UI, headings, body'],
+      ['--font-mono', 'IBM Plex Mono', 'Data, prices'],
+    ],
+    metrics: [
+      { title: 'Growth Score', value: '+18.4%', color: '#328E6E', rows: [['30d Trend','Bullish'],['Signals','12 active'],['Confidence','82%']] },
+      { title: 'Portfolio Health', value: 'Strong', color: '#67AE6E', rows: [['Diversification','8.4/10'],['Risk Level','Low'],['Rebalance','Not needed']] },
+    ]
+  },
+  {
+    id: 'amber-coast',
+    name: 'Amber Coast',
+    desc: 'Warm orange + golden yellow, cream, steel blue accent.',
+    tags: ['light', 'warm', 'friendly'],
+    trending: true,
+    bg: '#FFFDF5', accent: '#E87F24', accent2: '#73A5CA',
+    colors: [
+      { name: 'Amber / Primary', hex: '#E87F24' },
+      { name: 'Gold / Secondary', hex: '#FFC81E' },
+      { name: 'Cream / Neutral', hex: '#FEFDDF' },
+      { name: 'Steel Blue / Accent', hex: '#73A5CA' },
+      { name: 'Success / Buy', hex: '#2D9B5A' },
+      { name: 'Danger / Sell', hex: '#D94444' },
+      { name: 'Warning', hex: '#E87F24' },
+      { name: 'Background', hex: '#FFFDF5' },
+      { name: 'Text Primary', hex: '#2A1F0E' },
+      { name: 'Text Secondary', hex: '#6B5D42' },
+    ],
+    fonts: { sans: 'DM Sans', mono: 'Fira Code' },
+    tokens: [
+      ['--amber', '#E87F24', 'Primary brand, CTAs, energy'],
+      ['--gold', '#FFC81E', 'Highlights, secondary warm'],
+      ['--blue', '#73A5CA', 'Cool contrast, info, links'],
+      ['--cream', '#FEFDDF', 'Surface, card backgrounds'],
+      ['--success', '#2D9B5A', 'Buy, positive values'],
+      ['--danger', '#D94444', 'Sell, negative values'],
+      ['--bg-0', '#FFFDF5', 'Warm white background'],
+      ['--font-sans', 'DM Sans', 'UI, headings, body'],
+      ['--font-mono', 'Fira Code', 'Data, prices'],
+    ],
+    metrics: [
+      { title: 'Daily P&L', value: '+$32,180', color: '#E87F24', rows: [['Win Rate','67%'],['Best Trade','+$8,420'],['Trades','84']] },
+      { title: 'Market Pulse', value: 'Bullish', color: '#2D9B5A', rows: [['BTC Trend','Up'],['Vol Index','Medium'],['Sentiment','72/100']] },
+    ]
+  },
+];
+
+let currentIndex = 0;
+
+// ========== GALLERY RENDERING ==========
+function renderGallery() {
+  const grid = document.getElementById('galleryGrid');
+  grid.innerHTML = options.map((o, i) => `
+    <div class="gallery-card" onclick="showDetail(${i})" style="border-color: ${isLightColor(o.bg) ? '#E4E4E7' : '#27272A'}">
+      ${o.trending ? '<div class="badge-trend">2026 TREND</div>' : ''}
+      <div class="preview">
+        <div class="half" style="background:${o.accent}">
+          <div class="swatch" style="background:${o.bg}"></div>
+        </div>
+        <div class="half" style="background:${isLightColor(o.bg) ? o.accent2 : o.bg}">
+          <div class="swatch" style="background:${o.accent}"></div>
+        </div>
+      </div>
+      <div class="info">
+        <h3>${o.name}</h3>
+        <div class="desc">${o.desc}</div>
+        <div class="tags">${o.tags.map(t => `<span class="tag">${t}</span>`).join('')}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ========== MARKET TABLE BUILDER ==========
+function buildMarketTable(o, borderCol, textMut, textCol, textSec, surfaceCol, successCol, dangerCol, isLight) {
+  const hoverBg = isLight ? darken(surfaceCol,4) : lighten(surfaceCol,4);
+  const rows = [
+    ['1','BTC','PERP','$67,432.18','+2.41%','$1.82B','$18.4B','+0.0100%', true],
+    ['2','ETH','PERP','$3,241.05','-1.08%','$890M','$8.2B','-0.0032%', false],
+    ['3','SOL','PERP','$148.92','+5.33%','$340M','$2.1B','+0.0210%', true],
+    ['4','XAU','TRADFI','$4,661.72','-0.24%','$115M','$242M','-0.0078%', false],
+    ['5','AVAX','PERP','$8.81','+3.12%','$84M','$69M','+0.0150%', true],
+    ['6','LINK','PERP','$8.54','-1.39%','$58M','$77M','-0.0032%', false],
+    ['7','DOGE','PERP','$0.0842','+0.67%','$45M','$34M','+0.0045%', true],
+  ];
+  const mono = o.fonts.mono;
+  const typeBg = function(t) { return t==='PERP' ? o.accent+'1A' : (isLight?'#F3F4F6':'#27272A'); };
+  const typeColor = function(t) { return t==='PERP' ? o.accent : textSec; };
+  return rows.map(function(r) {
+    var chgCol = r[8] ? successCol : dangerCol;
+    var arrow = r[8] ? '▲' : '▼';
+    var fundCol = r[7].charAt(0)==='+' ? successCol : dangerCol;
+    return '<tr style="border-bottom:1px solid '+borderCol+';transition:background 0.1s" onmouseenter="this.style.background=\''+hoverBg+'\'" onmouseleave="this.style.background=\'transparent\'">'
+      +'<td style="padding:12px 14px;color:'+textMut+';font-family:\''+mono+'\',monospace">'+r[0]+'</td>'
+      +'<td style="padding:12px 14px;font-weight:600;color:'+textCol+'">'+r[1]+'<span style="color:'+textMut+';font-weight:400;margin-left:4px;font-size:11px">USDT</span></td>'
+      +'<td style="padding:12px 14px"><span style="padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;font-family:\''+mono+'\',monospace;background:'+typeBg(r[2])+';color:'+typeColor(r[2])+'">'+r[2]+'</span></td>'
+      +'<td style="padding:12px 14px;text-align:right;font-family:\''+mono+'\',monospace;font-weight:500;color:'+textCol+'">'+r[3]+'</td>'
+      +'<td style="padding:12px 14px;text-align:right;font-family:\''+mono+'\',monospace;font-weight:600;color:'+chgCol+'">'+arrow+' '+r[4]+'</td>'
+      +'<td style="padding:12px 14px;text-align:right;font-family:\''+mono+'\',monospace;color:'+textCol+'">'+r[5]+'</td>'
+      +'<td style="padding:12px 14px;text-align:right;font-family:\''+mono+'\',monospace;color:'+textCol+'">'+r[6]+'</td>'
+      +'<td style="padding:12px 14px;text-align:right;font-family:\''+mono+'\',monospace;color:'+fundCol+'">'+r[7]+'</td>'
+      +'</tr>';
+  }).join('');
+}
+
+// ========== DETAIL RENDERING ==========
+function showDetail(index) {
+  currentIndex = index;
+  const o = options[index];
+  document.getElementById('gallery').style.display = 'none';
+  document.getElementById('detail').style.display = 'block';
+  document.getElementById('detailName').textContent = `${index + 1} / ${options.length} — ${o.name}`;
+  document.getElementById('detailName').style.color = o.accent;
+
+  const isLight = isLightColor(o.bg);
+  const textCol = isLight ? '#0F172A' : '#E4E4E7';
+  const textSec = isLight ? '#475569' : '#71717A';
+  const textMut = isLight ? '#94A3B8' : '#52525B';
+  const borderCol = isLight ? '#E2E8F0' : '#27272A';
+  const surfaceCol = isLight ? darken(o.bg, 4) : lighten(o.bg, 8);
+  const successCol = o.colors.find(c=>c.name.includes('Success')||c.name.includes('Buy'))?.hex||'#22C55E';
+  const dangerCol = o.colors.find(c=>c.name.includes('Danger')||c.name.includes('Sell'))?.hex||'#EF4444';
+
+  document.getElementById('detailBody').innerHTML = `
+    <div style="color:${textCol}">
+      <div class="d-hero" style="border-bottom:1px solid ${borderCol}">
+        <h1 style="color:${o.accent};font-family:'${o.fonts.sans}',sans-serif">${o.name.toUpperCase()}</h1>
+        <div class="d-tag" style="background:${o.accent}22;border:1px solid ${o.accent}44;color:${o.accent};font-family:'${o.fonts.mono}',monospace">PERIMENTEX BRANDBOOK v1.0</div>
+        <p style="color:${textSec}">${o.desc}</p>
+      </div>
+
+      <!-- COLORS -->
+      <div class="d-section">
+        <div class="d-section-title" style="color:${o.accent}">01 — Palette</div>
+        <h2>Colors</h2>
+        <p class="d-desc" style="color:${textSec}">Click to copy hex value.</p>
+        <div class="d-color-grid">
+          ${o.colors.map(c => `
+            <div class="d-color-card" onclick="copyColor('${c.hex}')" style="border:1px solid ${borderCol};border-radius:10px;overflow:hidden;cursor:pointer">
+              <div class="d-swatch" style="background:${c.hex}${c.hex.toLowerCase() === '#ffffff' || c.hex.toLowerCase() === '#fafaf9' ? ';border-bottom:1px solid '+borderCol : ''}"></div>
+              <div class="d-color-info" style="background:${surfaceCol};padding:8px 10px">
+                <div class="d-color-name" style="color:${textCol}">${c.name}</div>
+                <div class="d-color-hex" style="color:${textMut}">${c.hex}</div>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+
+      <!-- TYPOGRAPHY -->
+      <div class="d-section">
+        <div class="d-section-title" style="color:${o.accent}">02 — Typography</div>
+        <h2>Type System</h2>
+        <p class="d-desc" style="color:${textSec}">${o.fonts.sans} for UI. ${o.fonts.mono} for data.</p>
+        <div class="d-type-sample" style="background:${surfaceCol};border:1px solid ${borderCol}">
+          <div class="d-type-label" style="color:${textMut}">Display / ${o.fonts.sans} 700</div>
+          <div style="font-family:'${o.fonts.sans}',sans-serif;font-size:32px;font-weight:700;letter-spacing:-1px;color:${textCol}">Trading Intelligence Platform</div>
+        </div>
+        <div class="d-type-sample" style="background:${surfaceCol};border:1px solid ${borderCol}">
+          <div class="d-type-label" style="color:${textMut}">Heading / ${o.fonts.sans} 600</div>
+          <div style="font-family:'${o.fonts.sans}',sans-serif;font-size:20px;font-weight:600;color:${textCol}">Portfolio Risk Analysis</div>
+        </div>
+        <div class="d-type-sample" style="background:${surfaceCol};border:1px solid ${borderCol}">
+          <div class="d-type-label" style="color:${textMut}">Body / ${o.fonts.sans} 400</div>
+          <div style="font-family:'${o.fonts.sans}',sans-serif;font-size:15px;color:${textSec}">Monitor positions across exchanges with real-time P&L, risk metrics, and automated alerts. Data synchronized at sub-second intervals.</div>
+        </div>
+        <div class="d-type-sample" style="background:${surfaceCol};border:1px solid ${borderCol}">
+          <div class="d-type-label" style="color:${textMut}">Data / ${o.fonts.mono} 500</div>
+          <div style="font-family:'${o.fonts.mono}',monospace;font-size:14px;font-weight:500;color:${o.accent}">BTC $67,432.18 | ETH $3,241.05 | +2.41%</div>
+        </div>
+      </div>
+
+      <!-- COMPONENTS -->
+      <div class="d-section">
+        <div class="d-section-title" style="color:${o.accent}">03 — Components</div>
+        <h2>UI Elements</h2>
+        <h3 style="font-size:14px;margin-bottom:10px;color:${textMut}">Buttons</h3>
+        <div class="d-component-row">
+          <button class="d-btn" style="background:${o.accent};color:${isLight||isLightColor(o.accent)?'#000':'#fff'};font-family:'${o.fonts.sans}',sans-serif">Primary Action</button>
+          <button class="d-btn" style="background:${o.colors.find(c=>c.name.includes('Success')||c.name.includes('Buy'))?.hex||'#22C55E'};color:#fff;font-family:'${o.fonts.sans}',sans-serif">Buy</button>
+          <button class="d-btn" style="background:${o.colors.find(c=>c.name.includes('Danger')||c.name.includes('Sell'))?.hex||'#EF4444'};color:#fff;font-family:'${o.fonts.sans}',sans-serif">Sell</button>
+          <button class="d-btn" style="background:transparent;color:${o.accent};border:1.5px solid ${o.accent};font-family:'${o.fonts.sans}',sans-serif">Outline</button>
+          <button class="d-btn" style="background:${surfaceCol};color:${textCol};border:1px solid ${borderCol};font-family:'${o.fonts.sans}',sans-serif">Ghost</button>
+        </div>
+
+        <h3 style="font-size:14px;margin:20px 0 10px;color:${textMut}">Badges</h3>
+        <div class="d-component-row">
+          <span class="d-badge" style="background:${o.accent}1A;color:${o.accent};font-family:'${o.fonts.mono}',monospace">Active</span>
+          <span class="d-badge" style="background:${o.colors.find(c=>c.name.includes('Success')||c.name.includes('Buy'))?.hex||'#22C55E'}1A;color:${o.colors.find(c=>c.name.includes('Success')||c.name.includes('Buy'))?.hex||'#22C55E'};font-family:'${o.fonts.mono}',monospace">Profit</span>
+          <span class="d-badge" style="background:${o.colors.find(c=>c.name.includes('Danger')||c.name.includes('Sell'))?.hex||'#EF4444'}1A;color:${o.colors.find(c=>c.name.includes('Danger')||c.name.includes('Sell'))?.hex||'#EF4444'};font-family:'${o.fonts.mono}',monospace">Risk</span>
+          <span class="d-badge" style="background:${o.colors.find(c=>c.name.includes('Warning'))?.hex||'#F59E0B'}1A;color:${o.colors.find(c=>c.name.includes('Warning'))?.hex||'#F59E0B'};font-family:'${o.fonts.mono}',monospace">Pending</span>
+        </div>
+
+        <h3 style="font-size:14px;margin:20px 0 10px;color:${textMut}">Cards</h3>
+        <div class="d-card-grid">
+          ${o.metrics.map(m => `
+            <div class="d-card" style="background:${surfaceCol};border:1px solid ${borderCol}">
+              <h3 style="color:${textMut}">${m.title}</h3>
+              <div class="d-metric" style="color:${m.color}">${m.value}</div>
+              ${m.rows.map(r => `<div class="d-stat-row" style="border-top:1px solid ${borderCol}"><span style="color:${textMut}">${r[0]}</span><span style="font-family:'${o.fonts.mono}',monospace;font-weight:500;color:${textCol}">${r[1]}</span></div>`).join('')}
+            </div>
+          `).join('')}
+        </div>
+      </div>
+
+      <!-- MARKET DATA TABLE -->
+      <div class="d-section">
+        <div class="d-section-title" style="color:${o.accent}">04 — Data Table</div>
+        <h2>Market Data Table</h2>
+        <p class="d-desc" style="color:${textSec}">Core pattern for market lists, order books, and trade history.</p>
+        <div style="border-radius:12px;overflow-x:auto;border:1px solid ${borderCol};background:${surfaceCol};-webkit-overflow-scrolling:touch">
+          <table style="width:100%;min-width:700px;border-collapse:collapse;font-size:13px;font-family:'${o.fonts.sans}',sans-serif">
+            <thead>
+              <tr style="border-bottom:1px solid ${borderCol}">
+                <th style="padding:12px 14px;text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:1px;color:${textMut};font-weight:600;font-family:'${o.fonts.mono}',monospace">#</th>
+                <th style="padding:12px 14px;text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:1px;color:${textMut};font-weight:600;font-family:'${o.fonts.mono}',monospace">Symbol</th>
+                <th style="padding:12px 14px;text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:1px;color:${textMut};font-weight:600;font-family:'${o.fonts.mono}',monospace">Type</th>
+                <th style="padding:12px 14px;text-align:right;font-size:11px;text-transform:uppercase;letter-spacing:1px;color:${textMut};font-weight:600;font-family:'${o.fonts.mono}',monospace">Price</th>
+                <th style="padding:12px 14px;text-align:right;font-size:11px;text-transform:uppercase;letter-spacing:1px;color:${textMut};font-weight:600;font-family:'${o.fonts.mono}',monospace">24H %</th>
+                <th style="padding:12px 14px;text-align:right;font-size:11px;text-transform:uppercase;letter-spacing:1px;color:${textMut};font-weight:600;font-family:'${o.fonts.mono}',monospace">Volume 24H</th>
+                <th style="padding:12px 14px;text-align:right;font-size:11px;text-transform:uppercase;letter-spacing:1px;color:${textMut};font-weight:600;font-family:'${o.fonts.mono}',monospace">Open Interest</th>
+                <th style="padding:12px 14px;text-align:right;font-size:11px;text-transform:uppercase;letter-spacing:1px;color:${textMut};font-weight:600;font-family:'${o.fonts.mono}',monospace">Funding</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${buildMarketTable(o, borderCol, textMut, textCol, textSec, surfaceCol, successCol, dangerCol, isLight)}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- TOKENS -->
+      <div class="d-section">
+        <div class="d-section-title" style="color:${o.accent}">05 — Design Tokens</div>
+        <h2>Token Reference</h2>
+        <table class="d-token-table">
+          <tr><th style="color:${textMut};border-bottom:1px solid ${borderCol}">Token</th><th style="color:${textMut};border-bottom:1px solid ${borderCol}">Value</th><th style="color:${textMut};border-bottom:1px solid ${borderCol}">Usage</th></tr>
+          ${o.tokens.map(t => `<tr><td style="color:${o.accent};border-bottom:1px solid ${borderCol}">${t[0]}</td><td style="color:${textCol};border-bottom:1px solid ${borderCol}">${t[1]}</td><td style="color:${textSec};border-bottom:1px solid ${borderCol}">${t[2]}</td></tr>`).join('')}
+        </table>
+      </div>
+    </div>
+  `;
+
+  // Apply full theme to page
+  document.body.style.background = o.bg;
+  document.getElementById('detail').style.background = o.bg;
+
+  // Theme the sticky header
+  const header = document.querySelector('.detail-header');
+  header.style.background = isLight ? 'rgba(255,255,255,0.9)' : `${o.bg}E6`;
+  header.style.borderBottom = `1px solid ${borderCol}`;
+
+  // Theme header buttons
+  document.querySelectorAll('.back-btn, .nav-btn').forEach(btn => {
+    btn.style.background = surfaceCol;
+    btn.style.border = `1px solid ${borderCol}`;
+    btn.style.color = textSec;
+  });
+
+  window.scrollTo(0, 0);
+}
+
+function showGallery() {
+  document.getElementById('gallery').style.display = 'block';
+  document.getElementById('detail').style.display = 'none';
+  document.body.style.background = '#F5F3EF';
+  document.getElementById('detail').style.background = '';
+  window.scrollTo(0, 0);
+}
+
+function navigateOption(delta) {
+  let next = currentIndex + delta;
+  if (next < 0) next = options.length - 1;
+  if (next >= options.length) next = 0;
+  showDetail(next);
+}
+
+function copyColor(hex) {
+  navigator.clipboard.writeText(hex);
+  const el = document.getElementById('copied');
+  el.textContent = 'Copied ' + hex;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 1200);
+}
+
+function lighten(hex, amt) {
+  hex = hex.replace('#', '');
+  let r = parseInt(hex.substring(0,2), 16);
+  let g = parseInt(hex.substring(2,4), 16);
+  let b = parseInt(hex.substring(4,6), 16);
+  r = Math.min(255, r + amt); g = Math.min(255, g + amt); b = Math.min(255, b + amt);
+  return '#' + [r,g,b].map(x => x.toString(16).padStart(2,'0')).join('');
+}
+
+function darken(hex, amt) {
+  hex = hex.replace('#', '');
+  let r = parseInt(hex.substring(0,2), 16);
+  let g = parseInt(hex.substring(2,4), 16);
+  let b = parseInt(hex.substring(4,6), 16);
+  r = Math.max(0, r - amt); g = Math.max(0, g - amt); b = Math.max(0, b - amt);
+  return '#' + [r,g,b].map(x => x.toString(16).padStart(2,'0')).join('');
+}
+
+function isLightColor(hex) {
+  hex = hex.replace('#', '');
+  const r = parseInt(hex.substring(0,2), 16);
+  const g = parseInt(hex.substring(2,4), 16);
+  const b = parseInt(hex.substring(4,6), 16);
+  return (r * 299 + g * 587 + b * 114) / 1000 > 150;
+}
+
+renderGallery();
+</script>
+</body>
+</html>
